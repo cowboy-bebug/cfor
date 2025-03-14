@@ -7,15 +7,7 @@ LDFLAGS := "-s -w -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.da
 build:
 	go build -ldflags $(LDFLAGS) -o $(OUTPUT)
 
-build-platform:
-	mkdir -p dist
-	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags $(LDFLAGS) -o dist/$(OUTPUT)
-
-install:
-	$(MAKE) build
-	mv $(OUTPUT) $(GOPATH)/bin/
-
 clean:
 	rm -rf dist
 
-.PHONY: build build-platform install clean
+.PHONY: build clean
