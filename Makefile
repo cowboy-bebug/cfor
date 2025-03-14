@@ -7,7 +7,10 @@ LDFLAGS := "-s -w -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.da
 build:
 	go build -ldflags $(LDFLAGS) -o $(OUTPUT)
 
+install:
+	go install -ldflags $(LDFLAGS)
+
 clean:
 	rm -rf dist
 
-.PHONY: build clean
+.PHONY: build install clean
