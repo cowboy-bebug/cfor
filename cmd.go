@@ -36,8 +36,18 @@ $ cfor "listing all files in the current directory with creation timestamps"
 $ cfor "installing a new package for a pnpm workspace"
 $ cfor "applying terraform changes to a specific resource"
 $ cfor "running tests in a go project"`,
-	Args: cobra.ExactArgs(1),
+	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			versionFlag, _ := cmd.Flags().GetBool("version")
+			if versionFlag {
+				fmt.Printf("v%s\n", Version)
+				os.Exit(0)
+			}
+			cmd.Help()
+			os.Exit(0)
+		}
+
 		for {
 			fmt.Print("\033[s") // Save cursor position
 
@@ -192,6 +202,7 @@ running the latest release.`,
 func init() {
 	rootCmd.AddCommand(costCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.Flags().BoolP("version", "v", false, "Display cfor version information")
 }
 
 func Execute() {
