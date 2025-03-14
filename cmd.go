@@ -15,12 +15,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var (
-	Version string
-	Commit  string
-	Date    string
-)
-
 var rootCmd = &cobra.Command{
 	Use:   "cfor [question]",
 	Short: "(What's the) command for ...?",
@@ -159,8 +153,24 @@ var costCmd = &cobra.Command{
 	},
 }
 
+var (
+	Version string
+	Commit  string
+	Date    string
+)
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Show the version of the command",
+	Long:  "Show the version of the command",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("v%s\n", Version)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(costCmd)
+	rootCmd.AddCommand(versionCmd)
 }
 
 func Execute() {
