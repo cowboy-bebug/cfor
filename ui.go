@@ -1,20 +1,12 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
-
-func HandleQuitError(err error) {
-	if errors.Is(err, QuitError{}) {
-		os.Exit(0)
-	}
-}
 
 type CmdSelector struct {
 	cmds     []string

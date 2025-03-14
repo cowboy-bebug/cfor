@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"os"
+)
 
 type APIKeyMissingError struct{}
 type CostFileNotFoundError struct{}
@@ -45,4 +49,10 @@ func (e UnsupportedModelError) Error() string {
 
 func (e UnsupportedModelError) Is(target error) bool {
 	return target == e
+}
+
+func HandleQuitError(err error) {
+	if errors.Is(err, QuitError{}) {
+		os.Exit(0)
+	}
 }
