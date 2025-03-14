@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -91,6 +92,8 @@ var (
 	NavigateKey2 = KeyStyle.Render("k/j")
 	ProceedKey   = KeyStyle.Render("Enter")
 	RerunKey     = KeyStyle.Render("r")
+	DeleteKey1   = KeyStyle.Render("Backspace")
+	DeleteKey2   = KeyStyle.Render("d")
 	ExitKey1     = KeyStyle.Render("Ctrl+c")
 	ExitKey2     = KeyStyle.Render("q")
 )
@@ -103,6 +106,7 @@ var (
 	ToNavigate = HelpStyle.Render("to navigate")
 	ToProceed  = HelpStyle.Render("to proceed")
 	ToExit     = HelpStyle.Render("to exit")
+	ToDelete   = HelpStyle.Render("to delete entry")
 	ToRerun    = HelpStyle.Render("to rerun")
 )
 
@@ -111,6 +115,7 @@ var (
 	Navigate = fmt.Sprintf("  %s %s %s %s %s\n", Use, NavigateKey1, Or, NavigateKey2, ToNavigate)
 	Proceed  = fmt.Sprintf("  %s %s %s\n", Press, ProceedKey, ToProceed)
 	Rerun    = fmt.Sprintf("  %s %s %s\n", Press, RerunKey, ToRerun)
+	Delete   = fmt.Sprintf("  %s %s %s %s %s\n", Press, DeleteKey1, Or, DeleteKey2, ToDelete)
 	Exit     = fmt.Sprintf("  %s %s %s %s %s\n", Press, ExitKey1, Or, ExitKey2, ToExit)
 )
 
@@ -169,8 +174,9 @@ func SelectCmd(cmds []CmdEntry) (string, error) {
 }
 
 type Table struct {
-	table table.Model
-	quit  bool
+	table   table.Model
+	quit    bool
+	ogTotal float64
 }
 
 func (m Table) Init() tea.Cmd {
@@ -185,6 +191,40 @@ func (m Table) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			m.quit = true
 			return m, tea.Quit
+		case "backspace", "d":
+			selectedRow := m.table.SelectedRow()
+			if selectedRow[0] == "TOTAL" {
+				return m, nil
+			}
+
+			date := selectedRow[0]
+
+			if err := DeleteCostEntry(Today(date)); err != nil {
+				return m, nil
+			}
+
+			costs, err := GetCosts()
+			if err != nil {
+				return m, nil
+			}
+
+			newModel := NewTableModel(costs)
+			newModel.ogTotal = m.ogTotal
+			newModel.table.SetCursor(0)
+
+			rows := newModel.table.Rows()
+			for i, row := range rows {
+				if row[0] == "TOTAL" {
+					rows[i] = table.Row{"TOTAL", fmt.Sprintf("%.5f", m.ogTotal)}
+					break
+				}
+			}
+			newModel.table.SetRows(rows)
+
+			m.table = newModel.table
+			m.ogTotal = newModel.ogTotal
+
+			return m, nil
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -195,7 +235,7 @@ func (m Table) View() string {
 	return strings.Repeat("\n", 2) +
 		m.table.View() +
 		strings.Repeat("\n", 3) +
-		Navigate + Exit
+		Navigate + Delete + Exit
 }
 
 func NewTableModel(costs Costs) Table {
@@ -221,6 +261,10 @@ func NewTableModel(costs Costs) Table {
 	}
 	rows = append(rows, table.Row{"TOTAL", fmt.Sprintf("%.5f", totalCost)})
 
+	sort.Slice(rows, func(i, j int) bool {
+		return rows[i][0] < rows[j][0]
+	})
+
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
@@ -234,7 +278,7 @@ func NewTableModel(costs Costs) Table {
 	s.Selected = SelectedItemStyle.Padding(0, 0)
 	t.SetStyles(s)
 
-	return Table{table: t, quit: false}
+	return Table{table: t, quit: false, ogTotal: totalCost}
 }
 
 func CostTableModel(costs Costs) error {

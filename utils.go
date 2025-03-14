@@ -59,14 +59,37 @@ func UpdateCost(cost float64) error {
 	}
 
 	today := time.Now().Format("2006-01-02")
-	costs := make(map[string]float64)
+	costs := make(Costs)
 	costData, err := os.ReadFile(costFilePath)
 	if err == nil && len(costData) > 0 {
 		if err := json.Unmarshal(costData, &costs); err != nil {
-			costs = make(map[string]float64)
+			costs = make(Costs)
 		}
 	}
-	costs[today] += cost
+	costs[Today(today)] += Cost(cost)
+	return writeCosts(costs)
+}
+
+func DeleteCostEntry(date Today) error {
+	costFilePath := costFilepath()
+	if costFilePath == "" {
+		return fmt.Errorf("could not determine cost file path")
+	}
+
+	costs, err := GetCosts()
+	if err != nil {
+		return err
+	}
+
+	delete(costs, date)
+	return writeCosts(costs)
+}
+
+func writeCosts(costs Costs) error {
+	costFilePath := costFilepath()
+	if costFilePath == "" {
+		return fmt.Errorf("could not determine cost file path")
+	}
 
 	updatedData, err := json.MarshalIndent(costs, "", "  ")
 	if err != nil {
