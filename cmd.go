@@ -31,6 +31,8 @@ var rootCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		for {
+			fmt.Print("\033[s") // Save cursor position
+
 			s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 			s.Suffix += " "
 			s.Color("fgGreen")
@@ -57,6 +59,8 @@ var rootCmd = &cobra.Command{
 			selectedCmd, err := SelectCmd(result.Message.Cmds)
 			if err != nil {
 				if errors.Is(err, RerunError{}) {
+					fmt.Print("\033[u") // Restore cursor to saved position
+					fmt.Print("\033[J") // Clear from cursor to end of screen
 					continue
 				}
 
