@@ -40,6 +40,7 @@ var rootCmd = &cobra.Command{
 
 			question := args[0]
 			result, err := GenerateCmds(question)
+			UpdateCost(float64(result.Cost))
 			if err != nil {
 				if errors.Is(err, &APIKeyMissingError{}) {
 					fmt.Println("\nHave you set up your OpenAI API key? Try one of these:")
@@ -135,7 +136,32 @@ func injectToPrompt(cmd string) error {
 	return nil
 }
 
-func init() {}
+var costCmd = &cobra.Command{
+	Use:   "cost",
+	Short: "Show the cost of the command",
+	Long:  "Show the cost of the command",
+	Run: func(cmd *cobra.Command, args []string) {
+		costs, err := GetCosts()
+		if err != nil {
+			if errors.Is(err, CostFileNotFoundError{}) {
+				fmt.Println("No costs incurred yet.")
+				os.Exit(0)
+			}
+			fmt.Println("Error retrieving costs.")
+			os.Exit(1)
+		}
+
+		if err = CostTableModel(costs); err != nil {
+			HandleQuitError(err)
+			fmt.Println("Error displaying costs.")
+			os.Exit(1)
+		}
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(costCmd)
+}
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {

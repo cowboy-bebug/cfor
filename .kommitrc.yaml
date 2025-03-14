@@ -19,3 +19,4 @@ commit:
     - main
     - openai
     - ui
+    - utils

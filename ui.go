@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -164,4 +166,89 @@ func SelectCmd(cmds []CmdEntry) (string, error) {
 	}
 
 	return cmds[model.cursor].Cmd, nil
+}
+
+type Table struct {
+	table table.Model
+	quit  bool
+}
+
+func (m Table) Init() tea.Cmd {
+	return nil
+}
+
+func (m Table) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q":
+			m.quit = true
+			return m, tea.Quit
+		}
+	}
+	m.table, cmd = m.table.Update(msg)
+	return m, cmd
+}
+
+func (m Table) View() string {
+	return strings.Repeat("\n", 2) +
+		m.table.View() +
+		strings.Repeat("\n", 3) +
+		Navigate + Exit
+}
+
+func NewTableModel(costs Costs) Table {
+	columns := []table.Column{
+		{Title: "Date", Width: 15},
+		{Title: "Cost ($)", Width: 15},
+	}
+
+	rows := []table.Row{}
+	var totalCost float64
+
+	thisRepoIndex := 0
+	today := time.Now().Format("2006-01-02")
+	for date, cost := range costs {
+		rows = append(rows, table.Row{string(date), fmt.Sprintf("%.5f", cost)})
+		totalCost += float64(cost)
+
+		if string(date) == today {
+			thisRepoIndex = len(rows) - 1
+		} else {
+			thisRepoIndex++
+		}
+	}
+	rows = append(rows, table.Row{"TOTAL", fmt.Sprintf("%.5f", totalCost)})
+
+	t := table.New(
+		table.WithColumns(columns),
+		table.WithRows(rows),
+		table.WithFocused(true),
+		table.WithHeight(len(rows)+1),
+	)
+	t.SetCursor(thisRepoIndex)
+
+	s := table.DefaultStyles()
+	s.Header = TableHeaderStyle
+	s.Selected = SelectedItemStyle.Padding(0, 0)
+	t.SetStyles(s)
+
+	return Table{table: t, quit: false}
+}
+
+func CostTableModel(costs Costs) error {
+	model := NewTableModel(costs)
+	p := tea.NewProgram(model)
+
+	_, err := p.Run()
+	if err != nil {
+		return err
+	}
+
+	if model.quit {
+		return QuitError{}
+	}
+
+	return nil
 }
