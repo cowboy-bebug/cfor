@@ -17,11 +17,25 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "cfor [question]",
-	Short: "(What's the) command for ...?",
-	Long: `Cfor is an AI-powered man page tool that doesn't feel like a thesis.
+	Short: "What's the command for...? AI-powered terminal assistant for command lookups",
+	Long: `c(ommand)for - AI-powered terminal assistant for command lookups
 
+cfor is an AI-powered terminal assistant that helps you find and execute
+commands without digging through man pages. Simply ask what you want to do in
+natural language, and cfor will suggest relevant commands with brief
+explanations. Select the command you need, and it will be automatically
+inserted into your terminal prompt.
 
-`,
+The name reflects its usage pattern: 'cfor [what you want to do]' is like
+asking 'what's the command for [task]?' - making it intuitive to use for
+finding the right commands for your tasks.
+
+Example:
+
+$ cfor "listing all files in the current directory with creation timestamps"
+$ cfor "installing a new package for a pnpm workspace"
+$ cfor "applying terraform changes to a specific resource"
+$ cfor "running tests in a go project"`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		for {
@@ -132,8 +146,11 @@ func injectToPrompt(cmd string) error {
 
 var costCmd = &cobra.Command{
 	Use:   "cost",
-	Short: "Show the cost of the command",
-	Long:  "Show the cost of the command",
+	Short: "Display API usage costs incurred by cfor",
+	Long: `Display a detailed breakdown of API usage costs incurred by cfor commands.
+This helps you track your expenses and monitor usage patterns across different
+AI models over time. The costs are shown by date, with the total amount spent
+on each day, helping you monitor your daily API usage.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		costs, err := GetCosts()
 		if err != nil {
@@ -161,10 +178,14 @@ var (
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Show the version of the command",
-	Long:  "Show the version of the command",
+	Short: "Display cfor version information",
+	Long: `Display the current version of cfor along with build information.
+This is useful for troubleshooting, reporting issues, or checking if you're
+running the latest release.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("v%s\n", Version)
+		fmt.Printf("cfor v%s\n", Version)
+		fmt.Printf("Commit: %s\n", Commit)
+		fmt.Printf("Built: %s\n", Date)
 	},
 }
 
