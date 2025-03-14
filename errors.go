@@ -16,7 +16,7 @@ type RerunError struct{}
 type UnsupportedModelError struct{ Model string }
 
 func (e APIKeyMissingError) Error() string {
-	return "CFOR_API_KEY or OPENAI_API_KEY environment variable must be set"
+	return "CFOR_OPEN_API_KEY or OPENAI_API_KEY environment variable must be set"
 }
 
 func (e CostFileNotFoundError) Error() string {

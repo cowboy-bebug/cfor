@@ -41,8 +41,8 @@ const (
 )
 
 func newClient() (*openai.Client, error) {
-	// CFOR_API_KEY takes precedence
-	apiKey := os.Getenv("CFOR_API_KEY")
+	// CFOR_OPENAI_API_KEY takes precedence
+	apiKey := os.Getenv("CFOR_OPENAI_API_KEY")
 	if apiKey == "" {
 		apiKey = os.Getenv("OPENAI_API_KEY")
 	}
@@ -123,7 +123,7 @@ type Cmds struct {
 var StructuredCmdsSchema = GenerateSchema[Cmds]()
 
 func GenerateCmds(question string) (ChatResult[Cmds], error) {
-	model := os.Getenv("CFOR_MODEL")
+	model := os.Getenv("CFOR_OPENAI_MODEL")
 	if model == "" {
 		model = "gpt-4o-mini"
 	}

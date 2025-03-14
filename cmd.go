@@ -63,7 +63,7 @@ $ cfor "running tests in a go project"`,
 				if errors.Is(err, &APIKeyMissingError{}) {
 					fmt.Println("\nHave you set up your OpenAI API key? Try one of these:")
 					fmt.Println("  export OPENAI_API_KEY=\"sk-...\"")
-					fmt.Println("  export CFOR_API_KEY=\"sk-...\"    # For a dedicated key")
+					fmt.Println("  export CFOR_OPENAI_API_KEY=\"sk-...\"    # For a dedicated key")
 				} else if errors.Is(err, &UnsupportedModelError{}) {
 					fmt.Println("Unsupported model is specified. Supported models are:")
 					fmt.Printf("  %s\n", strings.Join(OpenAISupportedModels, ", "))
