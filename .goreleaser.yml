@@ -1,0 +1,77 @@
+---
+version: 2
+project_name: cfor
+force_token: github
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: cfor
+    binary: cfor
+    main: ./
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - name_template: >-
+      cfor_v{{ .Version }}_{{ .Os }}_{{ .Arch }}
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
+
+brews:
+  - name: cfor
+    homepage: https://github.com/cowboy-bebug/cfor
+    description: AI-powered terminal assistant for command lookups
+    license: MIT
+
+    repository:
+      owner: cowboy-bebug
+      name: homebrew-tap
+
+    commit_author:
+      name: cowboy-bebug
+      email: cowboy-bebug@users.noreply.github.com
+
+    dependencies:
+      - name: git
+      - name: go
+        version: ^1.24
+
+    install: |
+      bin.install "cfor"
+    test: |
+      system "#{bin}/cfor", "version"
+    caveats: |
+      To begin using cfor, you must set up either OpenAI API key:
+        export OPENAI_API_KEY="sk-..."
+
+      Or use a dedicated key for cfor:
+        export CFOR_OPENAI_API_KEY="sk-..."
+
+      And optionally switch between supported models (default is gpt-4o):
+        export CFOR_OPENAI_MODEL="gpt-4o"
