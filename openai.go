@@ -12,31 +12,6 @@ import (
 	"github.com/openai/openai-go/option"
 )
 
-type APIKeyMissingError struct{}
-type JSONParseError struct{ Err error }
-type OpenAIRequestError struct{ Err error }
-type UnsupportedModelError struct{ Model string }
-
-func (e APIKeyMissingError) Error() string {
-	return "CFOR_API_KEY or OPENAI_API_KEY environment variable must be set"
-}
-
-func (e OpenAIRequestError) Error() string {
-	return fmt.Sprintf("OpenAI request failed: %v", e.Err)
-}
-
-func (e JSONParseError) Error() string {
-	return fmt.Sprintf("JSON unmarshal failed: %v", e.Err)
-}
-
-func (e UnsupportedModelError) Error() string {
-	return fmt.Sprintf("Unsupported model: %s", e.Model)
-}
-
-func (e UnsupportedModelError) Is(target error) bool {
-	return target == e
-}
-
 // OpenAI client configuration
 const (
 	timeout          = 10 * time.Second

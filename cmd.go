@@ -80,12 +80,6 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-type InjectError struct{ Char rune }
-
-func (e InjectError) Error() string {
-	return fmt.Sprintf("failed to inject character: %c", e.Char)
-}
-
 func injectToPrompt(cmd string) error {
 	var getTermios, setTermios uint
 	var tiocsti, sysIoctl uintptr

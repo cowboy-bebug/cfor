@@ -10,17 +10,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type QuitError struct{}
-type RerunError struct{}
-
-func (q QuitError) Error() string {
-	return "quitting"
-}
-
-func (q RerunError) Error() string {
-	return "rerunning"
-}
-
 func HandleQuitError(err error) {
 	if errors.Is(err, QuitError{}) {
 		os.Exit(0)
