@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"runtime"
 	"slices"
 	"time"
 
@@ -16,17 +17,18 @@ import (
 // OpenAI client configuration
 const (
 	timeout          = 10 * time.Second
-	temperature      = 0.3
+	temperature      = 1.0
 	topP             = 1.0
 	presencePenalty  = 0.0
 	frequencyPenalty = 0.0
+	maxTokens        = 2048
 )
 
 // Prompts
 const (
 	systemPrompt       = "You are a helpful system admin who provides users with commands to execute inside terminal, when asked."
 	jsonResponsePrompt = "Return your response as a valid JSON object."
-	mainPrompt         = "What is the command for"
+	mainPrompt         = "what is the command for"
 	guidelinePrompt    = `Follow the below guidelines.
 
 ## **General Rules**
@@ -85,6 +87,7 @@ func chatStructured[T any](model, prompt string, schema openai.ResponseFormatJSO
 		TopP:             openai.Float(topP),
 		PresencePenalty:  openai.Float(presencePenalty),
 		FrequencyPenalty: openai.Float(frequencyPenalty),
+		MaxTokens:        openai.Int(maxTokens),
 		Messages: openai.F([]openai.ChatCompletionMessageParamUnion{
 			openai.SystemMessage(systemPrompt + jsonResponsePrompt),
 			openai.UserMessage(prompt),
@@ -125,7 +128,7 @@ var StructuredCmdsSchema = GenerateSchema[Cmds]()
 func GenerateCmds(question string) (ChatResult[Cmds], error) {
 	model := os.Getenv("CFOR_OPENAI_MODEL")
 	if model == "" {
-		model = "gpt-4o-mini"
+		model = "gpt-4o"
 	}
 
 	if !IsSupportedModel(model) {
@@ -140,7 +143,7 @@ func GenerateCmds(question string) (ChatResult[Cmds], error) {
 	}
 
 	prompt := guidelinePrompt
-	prompt += fmt.Sprintf("%s %s?", mainPrompt, question)
+	prompt += fmt.Sprintf("For the **%s** operation system, %s %s?", runtime.GOOS, mainPrompt, question)
 	result, err := chatStructured[Cmds](model, prompt, schemaParam)
 	if err != nil {
 		return ChatResult[Cmds]{}, err
