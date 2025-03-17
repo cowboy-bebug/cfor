@@ -198,7 +198,6 @@ func (m Table) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			date := selectedRow[0]
-
 			if err := DeleteCostEntry(Today(date)); err != nil {
 				return m, nil
 			}
@@ -232,8 +231,7 @@ func (m Table) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Table) View() string {
-	return strings.Repeat("\n", 2) +
-		m.table.View() +
+	return m.table.View() +
 		strings.Repeat("\n", 3) +
 		Navigate + Delete + Exit
 }
